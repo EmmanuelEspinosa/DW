@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Simulacro Parcial</title>
+    <link rel='stylesheet' href='https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css'>
+    <script src='https://code.jquery.com/jquery-1.12.4.js'></script>
+    <script src='https://code.jquery.com/ui/1.12.1/jquery-ui.js'></script>
+    <script>
+        const url = 'https://caedc24b5a0d6945dacb.free.beeceptor.com/api/player/'
+
+        window.onload = function () {
+            
+            const dlg = document.getElementById('modal')
+           getObjects();
+
+           const form = document.getElementById('playerForm');
+             document.getElementById('playerForm').addEventListener('submit', saveObject)
+          
+
+        
+           
+        }
+
+        //PROMESAS//
+
+        function loadObjects() {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('GET', url)
+                request.responseType = 'json'
+                request.onload = function () {
+                    if (request.status >= 200 && request.status < 300) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send()
+            })
+        }
+
+        function addObject(newData) { 
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('POST', url)
+                request.setRequestHeader('Content-Type', 'application/json')
+                request.onload = function () {
+                    if (request.status >= 200 && request.status < 300) {
+                        resolve(request.response)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send(JSON.stringify(newData))
+            })
+        }
+
+        function removeObject(id) {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest();
+                request.open('DELETE', url + id);
+                request.onload = function () {
+                    if (request.status >= 200 && request.status < 300) {
+                        resolve(request.response);
+                    } else {
+                        reject(Error(request.statusText));
+                    }
+                };
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'));
+                };
+                request.send();
+            });
+        }
+                }
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send()
+            })
+        }
+
+        function modifyObject(id, updatedData) {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest();
+                request.open('PATCH', url + id);
+                request.setRequestHeader('Content-Type', 'application/json');
+                request.onload = function () {
+                    if (request.status >= 200 && request.status < 300) {
+                        const parsedResponse = JSON.parse(request.response || '{}');
+                        resolve(parsedResponse);
+                    } else {
+                        reject(Error(request.statusText));
+                    }
+                };
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'));
+                };
+                request.send(JSON.stringify(updatedData));
+            });
+        }
+            
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('PATCH', url + '/${id}') 
+                request.setRequestHeader('Content-Type', 'application/json')
+                request.onload = function () {
+                    if (request.status >= 200 && request.status < 300) {
+                        //"parse" cuando recibimos y queremos pasar de texto a objeto JS
+                        const parsedRequest=JSON.parse(newObjetData)
+                        resolve(parsedRequest)
+                    } else {
+                        reject(Error(request.statusText))
+                    }
+                }
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                //"Stringify" cuando vamos a enviar datos a la api, los convertimos en texto 
+                request.send(JSON.stringify(newObjetData))
+            })
+            
+        }
+
+        //FUNCIONES QUE CONSUMEN LAS PROMESAS//
+
+        function getObjects() {
+            loadObjects().then(response => {
+            const tableBody = document.getElementById('tableBody');
+                tableBody.innerHTML = ''; 
+
+                if (response && response.length > 0) {
+                    response.forEach(player => {
+                        const row = document.createElement('tr');
+                        row.id = `row-${player.id}`;
+                        row.innerHTML = `
+                            <td id='id-${player.id}'>${player.id}</td>
+                            <td id='name-${player.id}'>${player.name}</td>
+                            <td id='team-${player.id}'>${player.team}</td>
+                            <td id='goals-${player.id}'>${player.goals}</td>
+                            <td>
+                                <button class="update-btn" data-id="${player.id}">Update</button>
+                                <button class="delete-btn" data-id="${player.id}">Delete</button>
+                            </td> `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    alert('ERROR no hay datos')
+                }
+            }).catch(reason => {
+                console.error(reason);
+            });
+        }
+
+        function saveObject(event) 
+        {
+         
+  event.preventDefault();
+
+  const name = document.getElementById('nameInput').value.trim();
+  const team = document.getElementById('teamInput').value.trim();
+  const goals = Number(document.getElementById('goalsInput').value || 0);
+
+  if (!name || !team) {
+    alert('Completá nombre y equipo');
+    return;
+  }
+
+  const newPlayerData = { name, team, goals };
+
+            //Llamo a la promesa
+            addObject(newPlayerData).then((response)=>{
+             var newPlayer=JSON.parse(response)
+                  const tableBody= document.getElementById('tableBody')
+            const newRow=document.createElement('tr')
+            newRow.id = `row-${newPlayer.id}`
+            newRow.innerHTML=`
+            <td id='id-${newPlayer.id}'>${newPlayer.id}</td>
+            <td id='name-${newPlayer.id}'>${newPlayer.name}</td>
+            <td id='team-${newPlayer.id}'>${newPlayer.team}</td>
+            <td id='goals-${newPlayer.id}'>${newPlayer.goals}</td>
+            <td>
+            <button class="update-btn" data-id="${newPlayer.id}">Update</button>
+            <button class="delete-btn" data-id="${newPlayer.id}">Delete</button>
+                
+            </td>
+            `
+            tableBody.appendChild(newRow)
+            }).catch(reason => {
+                 console.error(reason)
+            })
+            
+        }
+  
+
+        function deleteObject(id) {
+            if (!confirm('¿Seguro que querés eliminar este jugador?')) return;
+            removeObject(id)
+              .then(() => {
+                  const row = document.getElementById(`row-${id}`);
+                  if (row) row.remove();
+              })
+              .catch(err => console.error(err));
+        }
+
+        function updateObject() {
+            const modalForm = document.getElementById('popUp');
+            modalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('modalPlayerId').value;
+                const name = document.getElementById('modalPlayerName').value.trim();
+                const team = document.getElementById('modalPlayerTeam').value.trim();
+                const goals = Number(document.getElementById('modalPlayerGoals').value || 0);
+                if (!name || !team) {
+                  alert('Completá nombre y equipo');
+                  return;
+                }
+                const updatedData = { name, team, goals };
+                modifyObject(id, updatedData)
+                  .then((player) => {
+                      document.getElementById(`name-${id}`).textContent  = (player.name ?? name);
+                      document.getElementById(`team-${id}`).textContent  = (player.team ?? team);
+                      document.getElementById(`goals-${id}`).textContent = (player.goals ?? goals);
+                      document.getElementById('modal').close();
+                  })
+                  .catch(err => console.error(err));
+            });
+        }
+        // Helpers for opening/closing the update modal
+        function openUpdateModal(id) {
+            const name = document.getElementById(`name-${id}`).textContent;
+            const team = document.getElementById(`team-${id}`).textContent;
+            const goals = Number(document.getElementById(`goals-${id}`).textContent || 0);
+            document.getElementById('modalPlayerId').value = id;
+            document.getElementById('modalPlayerName').value = name;
+            document.getElementById('modalPlayerTeam').value = team;
+            document.getElementById('modalPlayerGoals').value = goals;
+            document.getElementById('modal').showModal();
+        }
+
+        window.addEventListener('load', () => {
+            // Delegation for buttons
+            const tbody = document.getElementById('tableBody');
+            if (tbody) {
+                tbody.addEventListener('click', (e) => {
+                    const btn = e.target;
+                    if (btn.matches('.delete-btn')) {
+                        const id = btn.dataset.id;
+                        deleteObject(id);
+                    }
+                    if (btn.matches('.update-btn')) {
+                        const id = btn.dataset.id;
+                        openUpdateModal(id);
+                    }
+                });
+            }
+            // Wire up modal submit once
+            updateObject();
+
+            // Optional close button if present
+            const closeBtn = document.querySelector('#popUp .close-button');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('modal').close();
+                });
+            }
+        });
+
+    </script>
+</head>
+<!--Tabla de registros-->
+<body>
+    <div>
+    <h1>Tabla De Registros</h1>
+    <table style='border: 1px solid'>
+        <thead id="tableHead">
+            <tr>
+                <th>ID</th>
+                <th>NAME</th>
+                <th>TEAM</th>
+                <th>GOALS</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            
+        
+        
+        </tbody>
+    </table>
+    </div>
+<!--MODAL-->
+    <dialog id="modal" >
+    <form id='popUp'>
+        <h2>Update Player</h2>
+        <table>
+            <tr>
+                <td><label>ID</label></td>
+                <td><input id="modalPlayerId" type="text" name="id"  readonly ></td>
+            </tr>
+            <tr>
+                <td><label>NAME</label></td>
+                <td><input id="modalPlayerName" type="text" name="name" required></td>
+            </tr>
+            <tr>
+                <td><label>TEAM</label></td>
+                <td><input id="modalPlayerTeam" type="text" name="team" required></td>
+            </tr>
+            <tr>
+                <td><label>GOALS</label></td>
+                <td><input id="modalPlayerGoals" type="number" name="goals" min="0" step="1"></td>
+            </tr>
+            <tr>
+                <td colspan='2' style='text-align: center'>
+                    <button class="update-button">Update Player</button>
+                
+                    <button class="close-button">Close</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    </dialog>
+
+
+<!--Formulario para añadir-->
+<div class="container">
+<h2>Add New Player</h2>
+<form id="playerForm">
+
+    <div>
+
+        <label for="nameInput">Player Name:</label>
+        <input id="nameInput" type="text" placeholder="Enter Player Name">
+
+    </div>
+    <div>
+        
+        <label for="teamInput">Player Team:</label>
+        <input id="teamInput" type="text" placeholder="Enter Player Team">
+
+    </div>
+    <div>
+        
+        <label for="goalsInput">Player Goals:</label>
+        <input id="goalsInput" type="text" placeholder="Enter Player Goals">
+
+    </div>
+
+    <button type="submit" class="add-Object">Add Player</button>
+</form>
+
+</div>
+
+
+
+
+
+</body>
+
+
+
+
+
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            color: rgb(255, 254, 254);
+            background-color: #333;
+        }
+
+
+</style>
+</html>
